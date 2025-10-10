@@ -14,9 +14,9 @@ function InfoSections() {
           </div>
           <div className="relative">
             <img
-              src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&h=400&fit=crop"
+              src="/images/info-left.jpg"
               alt="Colorful cocktails"
-              className="rounded-lg shadow-2xl w-full h-64 object-cover"
+              className="rounded-lg shadow-2xl w-full h-100 object-cover"
             />
           </div>
         </div>
@@ -25,9 +25,9 @@ function InfoSections() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative order-2 lg:order-1">
             <img
-              src="https://images.unsplash.com/photo-1536935338788-846bb9981813?w=600&h=400&fit=crop"
+              src="/images/info-right.jpg"
               alt="Cocktail glass with ice"
-              className="rounded-lg shadow-2xl w-full h-64 object-cover"
+              className="rounded-lg shadow-2xl w-full h-100 object-cover"
             />
           </div>
           <div className="text-gray-300 order-1 lg:order-2">
