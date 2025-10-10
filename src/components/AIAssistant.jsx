@@ -67,7 +67,6 @@ function AIAssistant() {
         {!hasConversation && (
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-5xl font-bold mb-8 flex items-center justify-center gap-4">
-              <span className="text-4xl">✨</span>
               <span>Ask our AI ASSISTANT ABOUT Cocktail</span>
             </h2>
           </div>
@@ -112,7 +111,7 @@ function AIAssistant() {
                 <button
                   key={idx}
                   onClick={() => handleQuickQuestion(question)}
-                  className="border-2 border-gray-400 rounded-full px-8 py-4 text-gray-300 hover:border-white hover:text-white transition text-left"
+                  className="border-2 border-gray-400 rounded-full px-8 py-4 text-gray-300 hover:border-white hover:text-white transition text-center text-lg"
                 >
                   {question}
                 </button>
@@ -128,7 +127,6 @@ function AIAssistant() {
 
             {/* Input Area */}
             <div className="flex items-center bg-white rounded-full px-6 py-4 shadow-lg">
-              <span className="text-2xl mr-4">✨</span>
               <input
                 type="text"
                 placeholder="Ask questions about cocktail"
@@ -164,7 +162,6 @@ function AIAssistant() {
             {/* Input Area - Always at bottom */}
             <div className="max-w-4xl mx-auto w-full">
               <div className="flex items-center bg-white rounded-full px-6 py-4 shadow-lg">
-                <span className="text-2xl mr-4">✨</span>
                 <input
                   type="text"
                   placeholder="Ask questions about cocktail"
