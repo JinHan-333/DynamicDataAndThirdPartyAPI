@@ -1,9 +1,6 @@
 // DeepL Translation Service
-// API Documentation: https://www.deepl.com/docs-api
-// Requires API key (configured in .env as VITE_DEEPL_API_KEY)
-// Implementation in Phase 6
-
-const API_KEY = import.meta.env.VITE_DEEPL_API_KEY;
+// Calls serverless function at /api/deepl
+// API key is protected on server-side
 
 /**
  * Translate text using DeepL API
@@ -13,15 +10,10 @@ const API_KEY = import.meta.env.VITE_DEEPL_API_KEY;
  * @returns {Promise<Object>} Translation result
  */
 export const translateText = async (text, targetLang, sourceLang = null) => {
-  if (!API_KEY || API_KEY === 'your_deepl_api_key_here') {
-    throw new Error('DeepL API key not configured. Please set VITE_DEEPL_API_KEY in .env file.');
-  }
-
   if (!text || !targetLang) {
     throw new Error('Text and target language are required');
   }
 
-  const baseUrl = '/api/deepl/v2/translate';
   const body = {
     text: [text],
     target_lang: targetLang.toUpperCase(),
@@ -31,10 +23,9 @@ export const translateText = async (text, targetLang, sourceLang = null) => {
     body.source_lang = sourceLang.toUpperCase();
   }
 
-  const response = await fetch(baseUrl, {
+  const response = await fetch('/api/deepl?endpoint=translate', {
     method: 'POST',
     headers: {
-      'Authorization': `DeepL-Auth-Key ${API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
@@ -42,7 +33,7 @@ export const translateText = async (text, targetLang, sourceLang = null) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Translation failed: ${response.status}`);
+    throw new Error(errorData.error || `Translation failed: ${response.status}`);
   }
 
   const data = await response.json();
@@ -57,23 +48,11 @@ export const translateText = async (text, targetLang, sourceLang = null) => {
  * @returns {Promise<Array>} Array of supported languages
  */
 export const getSupportedLanguages = async () => {
-  if (!API_KEY || API_KEY === 'your_deepl_api_key_here') {
-    throw new Error('DeepL API key not configured');
-  }
-
-  const baseUrl = '/api/deepl/v2/languages';
-  const params = new URLSearchParams({
-    type: 'target',
-  });
-
-  const response = await fetch(`${baseUrl}?${params}`, {
-    headers: {
-      'Authorization': `DeepL-Auth-Key ${API_KEY}`,
-    },
-  });
+  const response = await fetch('/api/deepl?endpoint=languages&type=target');
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch languages: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to fetch languages: ${response.status}`);
   }
 
   const data = await response.json();

@@ -1,9 +1,6 @@
 // OpenAI Chat Service
-// API Documentation: https://platform.openai.com/docs/api-reference
-// Requires API key (configured in .env as VITE_OPENAI_API_KEY)
-// Implementation in Phase 7
-
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+// Calls serverless function at /api/openai
+// API key is protected on server-side
 
 /**
  * Send a chat message to OpenAI
@@ -12,27 +9,21 @@ const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
  * @returns {Promise<Object>} Chat completion response
  */
 export const sendChatMessage = async (messages, model = 'gpt-3.5-turbo') => {
-  if (!API_KEY) {
-    throw new Error('OpenAI API key not configured');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('/api/openai', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`
     },
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.7,
-      max_tokens: 500
+      stream: false
     })
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to get response from OpenAI');
+    throw new Error(error.error || 'Failed to get response from OpenAI');
   }
 
   const data = await response.json();
@@ -47,28 +38,21 @@ export const sendChatMessage = async (messages, model = 'gpt-3.5-turbo') => {
  * @returns {Promise<void>}
  */
 export const streamChatMessage = async (messages, onChunk, model = 'gpt-3.5-turbo') => {
-  if (!API_KEY) {
-    throw new Error('OpenAI API key not configured');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('/api/openai', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`
     },
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.7,
-      max_tokens: 500,
       stream: true
     })
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to get response from OpenAI');
+    throw new Error(error.error || 'Failed to get response from OpenAI');
   }
 
   const reader = response.body.getReader();

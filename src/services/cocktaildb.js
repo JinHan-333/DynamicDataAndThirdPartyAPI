@@ -1,8 +1,6 @@
 // CocktailDB API Service
-// API Documentation: https://www.thecocktaildb.com/api.php
-// Free API - No key required
-
-const BASE_URL = 'https://www.thecocktaildb.com/api/json/v1/1';
+// Calls serverless functions at /api/cocktaildb/*
+// API proxied for consistency and potential rate limiting
 
 /**
  * Search cocktails by name
@@ -10,7 +8,7 @@ const BASE_URL = 'https://www.thecocktaildb.com/api/json/v1/1';
  * @returns {Promise<Array>} Array of cocktails
  */
 export const searchCocktailByName = async (name) => {
-  const response = await fetch(`${BASE_URL}/search.php?s=${encodeURIComponent(name)}`);
+  const response = await fetch(`/api/cocktaildb/search?s=${encodeURIComponent(name)}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -21,7 +19,7 @@ export const searchCocktailByName = async (name) => {
  * @returns {Promise<Object|null>} Cocktail details
  */
 export const getCocktailById = async (id) => {
-  const response = await fetch(`${BASE_URL}/lookup.php?i=${id}`);
+  const response = await fetch(`/api/cocktaildb/lookup?i=${id}`);
   const data = await response.json();
   return data.drinks ? data.drinks[0] : null;
 };
@@ -31,7 +29,7 @@ export const getCocktailById = async (id) => {
  * @returns {Promise<Object|null>} Random cocktail
  */
 export const getRandomCocktail = async () => {
-  const response = await fetch(`${BASE_URL}/random.php`);
+  const response = await fetch('/api/cocktaildb/random');
   const data = await response.json();
   return data.drinks ? data.drinks[0] : null;
 };
@@ -42,7 +40,7 @@ export const getRandomCocktail = async () => {
  * @returns {Promise<Array>} Array of cocktails
  */
 export const searchCocktailByLetter = async (letter) => {
-  const response = await fetch(`${BASE_URL}/search.php?f=${letter}`);
+  const response = await fetch(`/api/cocktaildb/search?f=${letter}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -52,7 +50,7 @@ export const searchCocktailByLetter = async (letter) => {
  * @returns {Promise<Array>} Array of ingredients
  */
 export const listIngredients = async () => {
-  const response = await fetch(`${BASE_URL}/list.php?i=list`);
+  const response = await fetch('/api/cocktaildb/list?type=ingredients');
   const data = await response.json();
   return data.drinks || [];
 };
@@ -63,7 +61,7 @@ export const listIngredients = async () => {
  * @returns {Promise<Object|null>} Ingredient details
  */
 export const searchIngredientByName = async (name) => {
-  const response = await fetch(`${BASE_URL}/search.php?i=${encodeURIComponent(name)}`);
+  const response = await fetch(`/api/cocktaildb/search?i=${encodeURIComponent(name)}`);
   const data = await response.json();
   return data.ingredients ? data.ingredients[0] : null;
 };
@@ -74,7 +72,7 @@ export const searchIngredientByName = async (name) => {
  * @returns {Promise<Array>} Array of cocktails
  */
 export const filterByIngredient = async (ingredient) => {
-  const response = await fetch(`${BASE_URL}/filter.php?i=${encodeURIComponent(ingredient)}`);
+  const response = await fetch(`/api/cocktaildb/filter?i=${encodeURIComponent(ingredient)}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -85,7 +83,7 @@ export const filterByIngredient = async (ingredient) => {
  * @returns {Promise<Array>} Array of cocktails
  */
 export const filterByCategory = async (category) => {
-  const response = await fetch(`${BASE_URL}/filter.php?c=${encodeURIComponent(category)}`);
+  const response = await fetch(`/api/cocktaildb/filter?c=${encodeURIComponent(category)}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -96,7 +94,7 @@ export const filterByCategory = async (category) => {
  * @returns {Promise<Array>} Array of cocktails
  */
 export const filterByAlcoholic = async (status) => {
-  const response = await fetch(`${BASE_URL}/filter.php?a=${encodeURIComponent(status)}`);
+  const response = await fetch(`/api/cocktaildb/filter?a=${encodeURIComponent(status)}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -106,7 +104,7 @@ export const filterByAlcoholic = async (status) => {
  * @returns {Promise<Array>} Array of categories
  */
 export const listCategories = async () => {
-  const response = await fetch(`${BASE_URL}/list.php?c=list`);
+  const response = await fetch('/api/cocktaildb/list?type=categories');
   const data = await response.json();
   return data.drinks || [];
 };
@@ -116,7 +114,7 @@ export const listCategories = async () => {
  * @returns {Promise<Array>} Array of glass types
  */
 export const listGlasses = async () => {
-  const response = await fetch(`${BASE_URL}/list.php?g=list`);
+  const response = await fetch('/api/cocktaildb/list?type=glasses');
   const data = await response.json();
   return data.drinks || [];
 };
