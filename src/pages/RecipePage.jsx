@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getCocktailById } from '../services/cocktaildb'
+import { getCocktailById, getRandomCocktail } from '../services/cocktaildb'
 import { parseIngredients, parseInstructions } from '../utils/cocktailParser'
 import { translateText } from '../services/deepl'
 import CocktailHero from '../components/CocktailHero'
@@ -16,6 +16,7 @@ function RecipePage() {
   const [error, setError] = useState(null)
   const [translatedData, setTranslatedData] = useState(null)
   const [isTranslating, setIsTranslating] = useState(false)
+  const [relatedDrinks, setRelatedDrinks] = useState([])
 
   useEffect(() => {
     const fetchCocktail = async () => {
@@ -40,6 +41,24 @@ function RecipePage() {
     if (id) {
       fetchCocktail()
     }
+  }, [id])
+
+  useEffect(() => {
+    const fetchRelatedDrinks = async () => {
+      try {
+        const drinks = await Promise.all([
+          getRandomCocktail(),
+          getRandomCocktail(),
+          getRandomCocktail(),
+          getRandomCocktail()
+        ])
+        setRelatedDrinks(drinks.filter(drink => drink !== null))
+      } catch (err) {
+        console.error('Failed to fetch related drinks:', err)
+      }
+    }
+
+    fetchRelatedDrinks()
   }, [id])
 
   const handleTranslate = async (targetLang) => {
@@ -177,6 +196,35 @@ function RecipePage() {
         <div className="max-w-7xl mx-auto px-8 py-12 bg-black/70 backdrop-blur-sm my-8 rounded-lg text-center">
           <h2 className="text-3xl font-bold mb-4 text-white uppercase tracking-wide">Glass</h2>
           <p className="text-xl text-white">Serve: {translatedData?.glass || cocktail.strGlass}</p>
+        </div>
+      )}
+
+      {/* Related Drinks Section */}
+      {relatedDrinks.length > 0 && (
+        <div className="max-w-7xl mx-auto px-8 py-12">
+          <h2 className="text-3xl font-bold mb-8 text-white uppercase tracking-wide text-center">
+            Related Drinks
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedDrinks.map((drink) => (
+              <div
+                key={drink.idDrink}
+                onClick={() => navigate(`/recipe/${drink.idDrink}`)}
+                className="bg-black/60 backdrop-blur-sm rounded-lg overflow-hidden cursor-pointer transition transform hover:scale-105 hover:bg-black/80 border-2 border-transparent hover:border-white"
+              >
+                <img
+                  src={drink.strDrinkThumb}
+                  alt={drink.strDrink}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-bold text-white text-center uppercase tracking-wide">
+                    {drink.strDrink}
+                  </h3>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
