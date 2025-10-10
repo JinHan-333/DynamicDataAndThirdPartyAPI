@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Global font assignments */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Arsenal SC', sans-serif;
+}
+
+p, span, div, input, textarea, label, li, td, th {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+button, a {
+  font-family: 'Antic Slab', serif;
+}
+
+/* Specific overrides for subtitles */
+.subtitle, .secondary-heading {
+  font-family: 'Alegreya Sans SC', sans-serif;
+}
