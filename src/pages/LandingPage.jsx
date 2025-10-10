@@ -10,8 +10,9 @@ function LandingPage() {
       <Header />
       <Hero />
       <AIAssistant />
-      <AlphabetNav />
+
       <InfoSections />
+      <AlphabetNav />
     </div>
   )
 }
