@@ -6,21 +6,32 @@ function Hero() {
   const [randomCocktail, setRandomCocktail] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const fetchRandomCocktail = async () => {
+  useEffect(() => {
+    const fetchInitialCocktail = async () => {
+      setIsLoading(true)
+      try {
+        const cocktail = await getRandomCocktail()
+        setRandomCocktail(cocktail)
+      } catch (error) {
+        console.error('Failed to fetch random cocktail:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchInitialCocktail()
+  }, [])
+
+  const handleRandomCocktail = async () => {
     setIsLoading(true)
     try {
       const cocktail = await getRandomCocktail()
-      setRandomCocktail(cocktail)
+      navigate(`/recipe/${cocktail.idDrink}`)
     } catch (error) {
       console.error('Failed to fetch random cocktail:', error)
     } finally {
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    fetchRandomCocktail()
-  }, [])
 
   const handleViewRecipe = () => {
     if (randomCocktail) {
@@ -47,7 +58,7 @@ function Hero() {
                 Discover, Mix, and Enjoy Cocktails
               </p>
               <button
-                onClick={fetchRandomCocktail}
+                onClick={handleRandomCocktail}
                 disabled={isLoading}
                 className="px-12 py-4 border-2 border-white
                  text-white text-xl font-bold hover:bg-white hover:text-gray-800 transition disabled:opacity-50
@@ -56,7 +67,7 @@ function Hero() {
                 <h3 className="uppercase text-4xl">
                   {isLoading ? 'LOADING...' : 'RANDOM'}
                 </h3>
-                
+
               </button>
             </div>
           </div>
