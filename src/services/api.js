@@ -1,5 +1,6 @@
 const BASE_URL = '/api/recipes';
 const FAVORITES_URL = '/api/favorites';
+const METADATA_URL = '/api/metadata';
 
 export const getCustomRecipes = async () => {
   const response = await fetch(BASE_URL);
@@ -54,5 +55,11 @@ export const removeFromFavorites = async (recipeId) => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to remove from favorites');
+  return response.json();
+};
+
+export const getMetadata = async () => {
+  const response = await fetch(METADATA_URL);
+  if (!response.ok) throw new Error('Failed to fetch metadata');
   return response.json();
 };

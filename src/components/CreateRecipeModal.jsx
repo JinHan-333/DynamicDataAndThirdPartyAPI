@@ -1,18 +1,44 @@
-import { useState } from 'react';
-import { createRecipe } from '../services/api';
+import { useState, useEffect } from 'react';
+import { createRecipe, getMetadata } from '../services/api';
 
 function CreateRecipeModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     name: '',
     glass: 'Highball glass',
     instructions: '',
-    category: 'Cocktail', // Default
-    image: '', // Optional
+    category: 'Cocktail',
+    image: '',
   });
   
-  // Initial ingredient state matching the design (measure + name)
   const [ingredients, setIngredients] = useState([{ name: '', measure: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [metadata, setMetadata] = useState({
+    glass: [],
+    category: [],
+    ingredient: [],
+    alcoholic: []
+  });
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const data = await getMetadata();
+        setMetadata(data);
+        // Set defaults if available
+        if (data.glass && data.glass.length > 0) {
+            setFormData(prev => ({ ...prev, glass: data.glass[0] }));
+        }
+        if (data.category && data.category.length > 0) {
+            setFormData(prev => ({ ...prev, category: data.category[0] }));
+        }
+      } catch (error) {
+        console.error('Failed to load metadata:', error);
+      }
+    };
+    if (isOpen) {
+      fetchMetadata();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -49,12 +75,11 @@ function CreateRecipeModal({ isOpen, onClose }) {
       });
       alert('Recipe created successfully!');
       onClose();
-      // Reset form
       setFormData({
         name: '',
-        glass: 'Highball glass',
+        glass: metadata.glass[0] || 'Highball glass',
         instructions: '',
-        category: 'Cocktail',
+        category: metadata.category[0] || 'Cocktail',
         image: ''
       });
       setIngredients([{ name: '', measure: '' }]);
@@ -69,7 +94,6 @@ function CreateRecipeModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="bg-black border border-white w-full max-w-2xl relative rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-white hover:text-gray-300"
@@ -85,7 +109,6 @@ function CreateRecipeModal({ isOpen, onClose }) {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Top Row: Name and Glass */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-white uppercase mb-2">Cocktail Name</label>
@@ -106,15 +129,31 @@ function CreateRecipeModal({ isOpen, onClose }) {
                   onChange={handleInputChange}
                   className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none transition-colors appearance-none"
                 >
-                  <option className="bg-black">Highball glass</option>
-                  <option className="bg-black">Cocktail glass</option>
-                  <option className="bg-black">Old-fashioned glass</option>
-                  <option className="bg-black">Collins glass</option>
+                  {metadata.glass.length > 0 ? (
+                    metadata.glass.map(g => <option key={g} value={g} className="bg-black">{g}</option>)
+                  ) : (
+                    <option className="bg-black">Highball glass</option>
+                  )}
                 </select>
               </div>
             </div>
 
-            {/* Instructions */}
+            <div>
+                <label className="block text-xs font-bold text-white uppercase mb-2">Category</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none transition-colors appearance-none"
+                >
+                  {metadata.category.length > 0 ? (
+                    metadata.category.map(c => <option key={c} value={c} className="bg-black">{c}</option>)
+                  ) : (
+                    <option className="bg-black">Cocktail</option>
+                  )}
+                </select>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-white uppercase mb-2">Instructions for the Cocktail</label>
               <textarea
@@ -127,7 +166,6 @@ function CreateRecipeModal({ isOpen, onClose }) {
               ></textarea>
             </div>
 
-            {/* Ingredients Section */}
             <div>
               <h3 className="text-xl font-bold text-white text-center uppercase tracking-wider mb-6">Ingredients</h3>
               <div className="border border-dashed border-gray-600 rounded-lg p-6 space-y-4">
@@ -152,8 +190,12 @@ function CreateRecipeModal({ isOpen, onClose }) {
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                         className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none"
                         placeholder="Ingredient Name (e.g. Vodka)"
+                        list={`ingredient-list-${index}`}
                         required
                       />
+                      <datalist id={`ingredient-list-${index}`}>
+                        {metadata.ingredient.map(i => <option key={i} value={i} />)}
+                      </datalist>
                     </div>
                     {ingredients.length > 1 && (
                       <button
@@ -176,7 +218,6 @@ function CreateRecipeModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-4 pt-4">
               <button
                 type="button"

@@ -21,9 +21,11 @@ mongoose.connect(MONGODB_URI)
 // Routes
 const recipesRouter = require('./routes/recipes');
 const favoritesRouter = require('./routes/favorites');
+const metadataRouter = require('./routes/metadata');
 
 app.use('/api/recipes', recipesRouter);
 app.use('/api/favorites', favoritesRouter);
+app.use('/api/metadata', metadataRouter);
 
 app.get('/', (req, res) => {
   res.send('Cocktail API is running');
