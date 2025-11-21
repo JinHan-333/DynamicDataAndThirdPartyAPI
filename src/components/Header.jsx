@@ -33,18 +33,32 @@ function Header() {
     <header className="bg-black shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate('/')} 
-            onMouseEnter={() => setIsHovering(true)} 
-            onMouseLeave={() => setIsHovering(false)}
-            className="cursor-pointer transition-all duration-300 hover:scale-105"
-          > 
-            <h1 className={`text-3xl font-bold transition-colors duration-300 ${
-              isHovering ? 'text-blue-400' : 'text-white'
-            }`}>
-              Home
-            </h1>
-          </button>
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => navigate('/')} 
+              onMouseEnter={() => setIsHovering(true)} 
+              onMouseLeave={() => setIsHovering(false)}
+              className="cursor-pointer transition-all duration-300 hover:scale-105"
+            > 
+              <h1 className={`text-3xl font-bold transition-colors duration-300 ${
+                isHovering ? 'text-blue-400' : 'text-white'
+              }`}>
+                Home
+              </h1>
+            </button>
+            <button 
+              onClick={() => navigate('/create')}
+              className="text-white hover:text-blue-400 font-medium transition-colors"
+            >
+              Create
+            </button>
+            <button 
+              onClick={() => navigate('/favorites')}
+              className="text-white hover:text-blue-400 font-medium transition-colors"
+            >
+              Favorites
+            </button>
+          </div>
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl ml-8">
             <div className="flex gap-4">
               <input

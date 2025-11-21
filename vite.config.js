@@ -16,6 +16,10 @@ export default defineConfig({
           });
         },
       },
+      '/api/recipes': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
 })

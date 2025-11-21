@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getCocktailById, getRandomCocktail } from '../services/cocktaildb'
 import { parseIngredients, parseInstructions } from '../utils/cocktailParser'
 import { translateText } from '../services/deepl'
+import { getFavorites, addToFavorites, removeFromFavorites } from '../services/api'
 import CocktailHero from '../components/CocktailHero'
 import Ingredients from '../components/Ingredients'
 import Instructions from '../components/Instructions'
@@ -17,6 +18,35 @@ function RecipePage() {
   const [translatedData, setTranslatedData] = useState(null)
   const [isTranslating, setIsTranslating] = useState(false)
   const [relatedDrinks, setRelatedDrinks] = useState([])
+  const [isFavorite, setIsFavorite] = useState(false)
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const favData = await getFavorites()
+        const recipeIds = favData.recipes || []
+        setIsFavorite(recipeIds.includes(id))
+      } catch (err) {
+        console.error('Failed to check favorite status:', err)
+      }
+    }
+    if (id) checkFavoriteStatus()
+  }, [id])
+
+  const toggleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        await removeFromFavorites(id)
+        setIsFavorite(false)
+      } else {
+        await addToFavorites(id)
+        setIsFavorite(true)
+      }
+    } catch (err) {
+      console.error('Failed to toggle favorite:', err)
+      alert('Failed to update favorites')
+    }
+  }
 
   useEffect(() => {
     const fetchCocktail = async () => {
@@ -188,6 +218,21 @@ function RecipePage() {
         onTranslate={handleTranslate}
         isTranslating={isTranslating}
       />
+      
+      <div className="max-w-7xl mx-auto px-8 py-6 flex justify-end">
+        <button
+          onClick={toggleFavorite}
+          className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition transform hover:scale-105 ${
+            isFavorite 
+              ? 'bg-red-600 text-white hover:bg-red-700' 
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+          }`}
+        >
+          <span className="text-2xl">{isFavorite ? '♥' : '♡'}</span>
+          {isFavorite ? 'Favorited' : 'Add to Favorites'}
+        </button>
+      </div>
+
       <Ingredients ingredients={ingredients} />
       <Instructions steps={instructions} />
 
