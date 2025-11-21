@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
-import CreateRecipePage from './pages/CreateRecipePage'
+import RecipePage from './pages/RecipePage'
 import FavoritesPage from './pages/FavoritesPage'
 
 function App() {
@@ -9,7 +9,6 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/recipe/:id" element={<RecipePage />} />
-        <Route path="/create" element={<CreateRecipePage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
       </Routes>
     </BrowserRouter>

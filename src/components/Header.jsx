@@ -47,12 +47,6 @@ function Header() {
               </h1>
             </button>
             <button 
-              onClick={() => navigate('/create')}
-              className="text-white hover:text-blue-400 font-medium transition-colors"
-            >
-              Create
-            </button>
-            <button 
               onClick={() => navigate('/favorites')}
               className="text-white hover:text-blue-400 font-medium transition-colors"
             >
