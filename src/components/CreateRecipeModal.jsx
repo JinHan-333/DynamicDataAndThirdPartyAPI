@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createRecipe, getMetadata } from '../services/api';
+import CustomSelect from './CustomSelect';
 
 function CreateRecipeModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -18,6 +19,11 @@ function CreateRecipeModal({ isOpen, onClose }) {
     ingredient: [],
     alcoholic: []
   });
+
+  // Autocomplete state
+  const [activeIngredientIndex, setActiveIngredientIndex] = useState(null);
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const suggestionsRef = useRef(null);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -40,6 +46,17 @@ function CreateRecipeModal({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setActiveIngredientIndex(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!isOpen) return null;
 
   const handleInputChange = (e) => {
@@ -51,6 +68,26 @@ function CreateRecipeModal({ isOpen, onClose }) {
     const newIngredients = [...ingredients];
     newIngredients[index][field] = value;
     setIngredients(newIngredients);
+
+    if (field === 'name') {
+      setActiveIngredientIndex(index);
+      if (value.trim()) {
+        const filtered = metadata.ingredient.filter(item => 
+          item.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSuggestions(filtered);
+      } else {
+        setFilteredSuggestions([]);
+      }
+    }
+  };
+
+  const selectSuggestion = (index, value) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index].name = value;
+    setIngredients(newIngredients);
+    setActiveIngredientIndex(null);
+    setFilteredSuggestions([]);
   };
 
   const addIngredient = () => {
@@ -75,6 +112,7 @@ function CreateRecipeModal({ isOpen, onClose }) {
       });
       alert('Recipe created successfully!');
       onClose();
+      // Reset form
       setFormData({
         name: '',
         glass: metadata.glass[0] || 'Highball glass',
@@ -96,7 +134,7 @@ function CreateRecipeModal({ isOpen, onClose }) {
       <div className="bg-black border border-white w-full max-w-2xl relative rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-gray-300"
+          className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -122,36 +160,24 @@ function CreateRecipeModal({ isOpen, onClose }) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-white uppercase mb-2">Glass Type</label>
-                <select
+                <CustomSelect
+                  label="Glass Type"
                   name="glass"
                   value={formData.glass}
                   onChange={handleInputChange}
-                  className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none transition-colors appearance-none"
-                >
-                  {metadata.glass.length > 0 ? (
-                    metadata.glass.map(g => <option key={g} value={g} className="bg-black">{g}</option>)
-                  ) : (
-                    <option className="bg-black">Highball glass</option>
-                  )}
-                </select>
+                  options={metadata.glass.length > 0 ? metadata.glass : ['Highball glass']}
+                />
               </div>
             </div>
 
             <div>
-                <label className="block text-xs font-bold text-white uppercase mb-2">Category</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none transition-colors appearance-none"
-                >
-                  {metadata.category.length > 0 ? (
-                    metadata.category.map(c => <option key={c} value={c} className="bg-black">{c}</option>)
-                  ) : (
-                    <option className="bg-black">Cocktail</option>
-                  )}
-                </select>
+              <CustomSelect
+                label="Category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                options={metadata.category.length > 0 ? metadata.category : ['Cocktail']}
+              />
             </div>
 
             <div>
@@ -170,7 +196,7 @@ function CreateRecipeModal({ isOpen, onClose }) {
               <h3 className="text-xl font-bold text-white text-center uppercase tracking-wider mb-6">Ingredients</h3>
               <div className="border border-dashed border-gray-600 rounded-lg p-6 space-y-4">
                 {ingredients.map((ing, index) => (
-                  <div key={index} className="flex gap-4 items-center">
+                  <div key={index} className="flex gap-4 items-center relative z-20">
                     <div className="w-24">
                       <div className="relative">
                         <input
@@ -183,19 +209,35 @@ function CreateRecipeModal({ isOpen, onClose }) {
                         <span className="absolute right-2 top-2 text-gray-400 text-xs">ML</span>
                       </div>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 relative">
                       <input
                         type="text"
                         value={ing.name}
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                        onFocus={() => setActiveIngredientIndex(index)}
                         className="w-full bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:border-white focus:outline-none"
                         placeholder="Ingredient Name (e.g. Vodka)"
-                        list={`ingredient-list-${index}`}
                         required
+                        autoComplete="off"
                       />
-                      <datalist id={`ingredient-list-${index}`}>
-                        {metadata.ingredient.map(i => <option key={i} value={i} />)}
-                      </datalist>
+                      
+                      {/* Custom Autocomplete Dropdown */}
+                      {activeIngredientIndex === index && filteredSuggestions.length > 0 && (
+                        <div 
+                          ref={suggestionsRef}
+                          className="absolute left-0 right-0 top-full mt-1 bg-black border border-gray-500 rounded-md shadow-lg max-h-60 overflow-y-auto z-50"
+                        >
+                          {filteredSuggestions.map((suggestion, i) => (
+                            <div
+                              key={i}
+                              onClick={() => selectSuggestion(index, suggestion)}
+                              className="px-3 py-2 hover:bg-gray-800 cursor-pointer text-white text-sm"
+                            >
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {ingredients.length > 1 && (
                       <button
