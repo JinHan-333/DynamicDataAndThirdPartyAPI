@@ -12,7 +12,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'RU', name: 'Russian' },
 ];
 
-function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating }) {
+function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, isFavorite, onToggleFavorite }) {
   const [selectedLang, setSelectedLang] = useState('ES');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
@@ -54,7 +54,16 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating }) 
 
           {/* Right: Details */}
           <div>
-            <h1 className="text-5xl font-bold mb-6 uppercase tracking-wide">{displayName}</h1>
+            <div className="flex items-center gap-4 mb-6">
+              <h1 className="text-5xl font-bold uppercase tracking-wide">{displayName}</h1>
+              <button
+                onClick={onToggleFavorite}
+                className="bg-white text-black w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-200 transition flex-shrink-0"
+                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              >
+                <span className="text-xl">{isFavorite ? '♥' : '♡'}</span>
+              </button>
+            </div>
 
             <div className="space-y-2 mb-8 text-lg">
               {displayAlcoholic && (
@@ -135,6 +144,8 @@ CocktailHero.propTypes = {
   translatedData: PropTypes.object,
   onTranslate: PropTypes.func,
   isTranslating: PropTypes.bool,
+  isFavorite: PropTypes.bool,
+  onToggleFavorite: PropTypes.func,
 };
 
 export default CocktailHero;

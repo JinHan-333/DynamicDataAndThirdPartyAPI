@@ -207,22 +207,23 @@ function FavoritesPage() {
 
                 {/* Content Section (Right) */}
                 <div className="w-1/2 p-6 flex flex-col justify-between relative">
-                  {/* Heart Icon */}
-                  <button
-                    onClick={(e) => handleRemoveRecipe(e, drink.idDrink)}
-                    className="absolute top-4 right-4 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition z-10"
-                    title="Remove from list"
-                  >
-                    <span className="text-lg">♥</span>
-                  </button>
-
                   <div>
-                    <h3 
-                      className="text-xl font-bold text-white uppercase tracking-wider mb-4 cursor-pointer hover:text-gray-300 transition"
-                      onClick={() => navigate(`/recipe/${drink.idDrink}`)}
-                    >
-                      {drink.strDrink}
-                    </h3>
+                    <div className="flex items-center gap-3 mb-4">
+                      <h3 
+                        className="text-xl font-bold text-white uppercase tracking-wider cursor-pointer hover:text-gray-300 transition"
+                        onClick={() => navigate(`/recipe/${drink.idDrink}`)}
+                      >
+                        {drink.strDrink}
+                      </h3>
+                      {/* Heart Icon */}
+                      <button
+                        onClick={(e) => handleRemoveRecipe(e, drink.idDrink)}
+                        className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center hover:bg-gray-200 transition flex-shrink-0"
+                        title="Remove from list"
+                      >
+                        <span className="text-sm">♥</span>
+                      </button>
+                    </div>
                     
                     <div className="space-y-1 text-xs text-gray-400 uppercase tracking-wide">
                       <p><span className="text-gray-500">Alcoholic:</span> {drink.strAlcoholic || 'Unknown'}</p>

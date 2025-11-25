@@ -237,26 +237,16 @@ function RecipePage() {
       }}
     >
       <Header />
-      <CocktailHero
-        cocktail={cocktail}
+      <CocktailHero 
+        cocktail={cocktail} 
         translatedData={translatedData}
         onTranslate={handleTranslate}
         isTranslating={isTranslating}
+        isFavorite={isFavorite}
+        onToggleFavorite={() => setIsModalOpen(true)}
       />
       
-      <div className="max-w-7xl mx-auto px-8 py-6 flex justify-end">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition transform hover:scale-105 ${
-            isFavorite 
-              ? 'bg-red-600 text-white hover:bg-red-700' 
-              : 'bg-gray-700 text-white hover:bg-gray-600'
-          }`}
-        >
-          <span className="text-2xl">{isFavorite ? '♥' : '♡'}</span>
-          {isFavorite ? 'Saved' : 'Add to Favorites'}
-        </button>
-      </div>
+
 
       <Ingredients ingredients={ingredients} isCustom={cocktail?.isCustom} />
       <Instructions steps={instructions} />
