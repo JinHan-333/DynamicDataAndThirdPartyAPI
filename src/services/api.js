@@ -2,8 +2,9 @@ const BASE_URL = '/api/recipes';
 const FAVORITES_URL = '/api/favorites';
 const METADATA_URL = '/api/metadata';
 
-export const getCustomRecipes = async () => {
-  const response = await fetch(BASE_URL);
+export const getCustomRecipes = async (name = '') => {
+  const url = name ? `${BASE_URL}?name=${encodeURIComponent(name)}` : BASE_URL;
+  const response = await fetch(url);
   if (!response.ok) throw new Error('Failed to fetch recipes');
   return response.json();
 };

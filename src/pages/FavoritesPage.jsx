@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getFavorites, getCustomRecipeById } from '../services/api';
+import { getFavorites } from '../services/api';
 import { getCocktailById } from '../services/cocktaildb';
 import Header from '../components/Header';
 
@@ -16,23 +16,7 @@ function FavoritesPage() {
         const recipeIds = favData.recipes || [];
 
         // Fetch details for each favorite
-        const drinksPromises = recipeIds.map(async (id) => {
-          // Try custom first, then external
-          // Note: In a real app, we'd probably store the type (custom/external) or have a unified ID system.
-          // For now, we'll guess based on ID format or just try both.
-          // MongoDB IDs are 24 hex chars. External IDs are usually numeric strings.
-          
-          if (id.length === 24 && /^[0-9a-fA-F]+$/.test(id)) {
-             try {
-               return await getCustomRecipeById(id);
-             } catch (e) {
-               // If failed, maybe it's external (unlikely if 24 hex, but possible collision)
-               return await getCocktailById(id);
-             }
-          } else {
-             return await getCocktailById(id);
-          }
-        });
+        const drinksPromises = recipeIds.map(id => getCocktailById(id));
 
         const drinks = await Promise.all(drinksPromises);
         setFavorites(drinks.filter(d => d !== null));
@@ -79,22 +63,31 @@ function FavoritesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {favorites.map((drink) => (
               <div
-                key={drink._id || drink.idDrink}
-                onClick={() => navigate(`/recipe/${drink._id || drink.idDrink}`)}
+                key={drink.idDrink}
+                onClick={() => navigate(`/recipe/${drink.idDrink}`)}
                 className="bg-gray-800 rounded-lg overflow-hidden cursor-pointer transition transform hover:scale-105 hover:bg-gray-700 border border-gray-700 hover:border-blue-500"
               >
-                <img
-                  src={drink.image || drink.strDrinkThumb || '/images/placeholder.png'}
-                  alt={drink.name || drink.strDrink}
-                  className="w-full h-48 object-cover"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
-                />
+                {drink.isCustom ? (
+                  <div className="w-full h-48 bg-gray-900 flex items-center justify-center border-b border-gray-700">
+                    <div className="text-center">
+                      <span className="text-4xl mb-2 block">📝</span>
+                      <span className="text-xs text-gray-400 uppercase tracking-widest">Custom Recipe</span>
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={drink.strDrinkThumb || '/images/placeholder.png'}
+                    alt={drink.strDrink}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
+                  />
+                )}
                 <div className="p-4">
                   <h3 className="text-lg font-bold text-white truncate">
-                    {drink.name || drink.strDrink}
+                    {drink.strDrink}
                   </h3>
                   <p className="text-sm text-gray-400">
-                    {drink.category || drink.strCategory}
+                    {drink.strCategory}
                   </p>
                 </div>
               </div>

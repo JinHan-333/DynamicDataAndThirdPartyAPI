@@ -233,7 +233,7 @@ function RecipePage() {
         </button>
       </div>
 
-      <Ingredients ingredients={ingredients} />
+      <Ingredients ingredients={ingredients} isCustom={cocktail?.isCustom} />
       <Instructions steps={instructions} />
 
       {/* Glass Section */}

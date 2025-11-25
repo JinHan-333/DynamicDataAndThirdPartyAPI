@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/Recipe');
 
-// GET all custom recipes
+// GET all custom recipes or search by name
 router.get('/', async (req, res) => {
   try {
-    const recipes = await Recipe.find().sort({ createdAt: -1 });
+    let query = {};
+    if (req.query.name) {
+      query.name = { $regex: req.query.name, $options: 'i' };
+    }
+    const recipes = await Recipe.find(query).sort({ createdAt: -1 });
     res.json(recipes);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -23,6 +27,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+const { generateCocktailImage } = require('../services/imageGenerator');
+const fs = require('fs');
+const path = require('path');
+
 // POST create recipe
 router.post('/', async (req, res) => {
   const recipe = new Recipe({
@@ -36,6 +44,36 @@ router.post('/', async (req, res) => {
 
   try {
     const newRecipe = await recipe.save();
+
+    // Generate Image
+    try {
+      const imageBuffer = await generateCocktailImage(newRecipe);
+      if (imageBuffer) {
+        const imageName = `${newRecipe._id}.png`;
+        const publicDir = path.join(__dirname, '../../public/images/custom');
+        
+        // Ensure directory exists
+        if (!fs.existsSync(publicDir)){
+            fs.mkdirSync(publicDir, { recursive: true });
+        }
+
+        const imagePath = path.join(publicDir, imageName);
+        fs.writeFileSync(imagePath, imageBuffer);
+        
+        console.log('--------------------------------------------------');
+        console.log('Generated Image Saved To:', imagePath);
+        console.log('Public URL:', `/api/images/custom/${imageName}`);
+        console.log('--------------------------------------------------');
+
+        // Update recipe with image URL
+        newRecipe.image = `/api/images/custom/${imageName}`;
+        await newRecipe.save();
+      }
+    } catch (imgErr) {
+      console.error('Image generation/saving failed:', imgErr);
+      // Continue without image
+    }
+
     res.status(201).json(newRecipe);
   } catch (err) {
     res.status(400).json({ message: err.message });

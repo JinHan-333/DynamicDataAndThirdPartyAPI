@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 
@@ -22,10 +23,13 @@ mongoose.connect(MONGODB_URI)
 const recipesRouter = require('./routes/recipes');
 const favoritesRouter = require('./routes/favorites');
 const metadataRouter = require('./routes/metadata');
+const ingredientsRouter = require('./routes/ingredients');
 
 app.use('/api/recipes', recipesRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/metadata', metadataRouter);
+app.use('/api/ingredients', ingredientsRouter);
+app.use('/api/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/', (req, res) => {
   res.send('Cocktail API is running');

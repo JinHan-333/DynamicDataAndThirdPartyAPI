@@ -8,12 +8,39 @@
  * @returns {Promise<Array>} Array of cocktails
  */
 export const searchCocktailByName = async (name) => {
+  // 1. Try local custom recipes first
+  try {
+    const localRecipes = await getCustomRecipes(name);
+    if (localRecipes && localRecipes.length > 0) {
+      return localRecipes.map(recipe => ({
+        idDrink: recipe._id,
+        strDrink: recipe.name,
+        strInstructions: recipe.instructions,
+        strGlass: recipe.glass,
+        strCategory: recipe.category,
+        strDrinkThumb: recipe.image,
+        strAlcoholic: 'Alcoholic',
+        isCustom: true,
+        // Map ingredients
+        ...recipe.ingredients.reduce((acc, ing, i) => {
+          acc[`strIngredient${i + 1}`] = ing.name;
+          acc[`strMeasure${i + 1}`] = ing.measure;
+          return acc;
+        }, {})
+      }));
+    }
+  } catch (err) {
+    console.error('Failed to search local recipes:', err);
+    // Continue to external API if local fails
+  }
+
+  // 2. Fallback to external API
   const response = await fetch(`/api/cocktaildb/search?s=${encodeURIComponent(name)}`);
   const data = await response.json();
   return data.drinks || [];
 };
 
-import { getCustomRecipeById } from './api';
+import { getCustomRecipeById, getCustomRecipes } from './api';
 
 /**
  * Get cocktail details by ID
@@ -35,6 +62,7 @@ export const getCocktailById = async (id) => {
           strCategory: customRecipe.category,
           strDrinkThumb: customRecipe.image,
           strAlcoholic: 'Alcoholic', // Default for now
+          isCustom: true,
           // Map ingredients
           ...customRecipe.ingredients.reduce((acc, ing, i) => {
             acc[`strIngredient${i + 1}`] = ing.name;

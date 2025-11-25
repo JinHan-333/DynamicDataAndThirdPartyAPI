@@ -33,13 +33,23 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating }) 
     <div className="relative bg-black/60 backdrop-blur-sm text-white">
       <div className="max-w-7xl mx-auto px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left: Image */}
+          {/* Left: Image or Custom Label */}
           <div className="flex justify-center">
-            <img
-              src={cocktail.strDrinkThumb}
-              alt={cocktail.strDrink}
-              className="w-full max-w-md rounded-lg shadow-2xl"
-            />
+            {cocktail.isCustom && !cocktail.strDrinkThumb ? (
+              <div className="w-full max-w-md aspect-square flex items-center justify-center">
+                <div className="text-center p-8">
+                  <span className="text-6xl mb-4 block">📝</span>
+                  <h2 className="text-2xl font-bold text-white uppercase tracking-widest">Custom Recipe</h2>
+                  <p className="text-gray-400 mt-2">Created by You</p>
+                </div>
+              </div>
+            ) : (
+              <img
+                src={cocktail.strDrinkThumb}
+                alt={cocktail.strDrink}
+                className="w-full max-w-md rounded-lg shadow-2xl"
+              />
+            )}
           </div>
 
           {/* Right: Details */}
