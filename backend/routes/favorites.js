@@ -2,50 +2,103 @@ const express = require('express');
 const router = express.Router();
 const Favorite = require('../models/Favorite');
 
-// Get the main favorites list (creating it if it doesn't exist)
+// Get all favorite groups
 router.get('/', async (req, res) => {
   try {
-    let favorites = await Favorite.findOne({ name: 'My Favorites' });
-    if (!favorites) {
-      favorites = new Favorite({ name: 'My Favorites', recipes: [] });
-      await favorites.save();
+    // Ensure default group exists
+    let defaultGroup = await Favorite.findOne({ name: 'My Favorites' });
+    if (!defaultGroup) {
+      defaultGroup = new Favorite({ name: 'My Favorites', recipes: [] });
+      await defaultGroup.save();
     }
+    
+    const favorites = await Favorite.find().sort({ createdAt: 1 });
     res.json(favorites);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Add a recipe to favorites
+// Create a new favorite group
+router.post('/group', async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ message: 'Group name is required' });
+
+  try {
+    const existing = await Favorite.findOne({ name });
+    if (existing) return res.status(400).json({ message: 'Group already exists' });
+
+    const newGroup = new Favorite({ name, recipes: [] });
+    await newGroup.save();
+    res.status(201).json(newGroup);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete a favorite group
+router.delete('/group/:id', async (req, res) => {
+  try {
+    const group = await Favorite.findById(req.params.id);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+    
+    if (group.name === 'My Favorites') {
+      return res.status(400).json({ message: 'Cannot delete the default group' });
+    }
+
+    await group.deleteOne();
+    res.json({ message: 'Group deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Add a recipe to a group (default to "My Favorites" if no groupId)
 router.post('/', async (req, res) => {
-  const { recipeId } = req.body;
+  const { recipeId, groupId } = req.body;
   if (!recipeId) return res.status(400).json({ message: 'Recipe ID is required' });
 
   try {
-    let favorites = await Favorite.findOne({ name: 'My Favorites' });
-    if (!favorites) {
-      favorites = new Favorite({ name: 'My Favorites', recipes: [] });
+    let group;
+    if (groupId) {
+      group = await Favorite.findById(groupId);
+    } else {
+      group = await Favorite.findOne({ name: 'My Favorites' });
     }
 
-    if (!favorites.recipes.includes(recipeId)) {
-      favorites.recipes.push(recipeId);
-      await favorites.save();
+    if (!group) {
+        // Fallback create default if missing
+        group = new Favorite({ name: 'My Favorites', recipes: [] });
     }
-    res.json(favorites);
+
+    if (!group.recipes.includes(recipeId)) {
+      group.recipes.push(recipeId);
+      await group.save();
+    }
+    res.json(group);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Remove a recipe from favorites
+// Remove a recipe from a group
 router.delete('/:id', async (req, res) => {
+  const recipeId = req.params.id;
+  const { groupId } = req.query; // Pass groupId as query param
+
   try {
-    let favorites = await Favorite.findOne({ name: 'My Favorites' });
-    if (favorites) {
-      favorites.recipes = favorites.recipes.filter(id => id !== req.params.id);
-      await favorites.save();
+    let group;
+    if (groupId) {
+      group = await Favorite.findById(groupId);
+    } else {
+      group = await Favorite.findOne({ name: 'My Favorites' });
     }
-    res.json(favorites);
+
+    if (group) {
+      group.recipes = group.recipes.filter(id => id !== recipeId);
+      await group.save();
+    }
+    res.json(group);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

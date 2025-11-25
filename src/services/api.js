@@ -1,3 +1,4 @@
+const API_URL = '/api';
 const BASE_URL = '/api/recipes';
 const FAVORITES_URL = '/api/favorites';
 const METADATA_URL = '/api/metadata';
@@ -36,26 +37,48 @@ export const deleteRecipe = async (id) => {
 };
 
 export const getFavorites = async () => {
-  const response = await fetch(FAVORITES_URL);
-  if (!response.ok) throw new Error('Failed to fetch favorites');
+  const response = await fetch(`${API_URL}/favorites`);
+  if (!response.ok) throw new Error('Failed to fetch favorites'); // Re-added error handling
   return response.json();
 };
 
-export const addToFavorites = async (recipeId) => {
-  const response = await fetch(FAVORITES_URL, {
+export const createFavoriteGroup = async (name) => {
+  const response = await fetch(`${API_URL}/favorites/group`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recipeId }),
+    body: JSON.stringify({ name }),
   });
-  if (!response.ok) throw new Error('Failed to add to favorites');
+  if (!response.ok) throw new Error('Failed to create favorite group'); // Added error handling
   return response.json();
 };
 
-export const removeFromFavorites = async (recipeId) => {
-  const response = await fetch(`${FAVORITES_URL}/${recipeId}`, {
+export const deleteFavoriteGroup = async (id) => {
+  const response = await fetch(`${API_URL}/favorites/group/${id}`, {
     method: 'DELETE',
   });
-  if (!response.ok) throw new Error('Failed to remove from favorites');
+  if (!response.ok) throw new Error('Failed to delete favorite group'); // Added error handling
+  return response.json();
+};
+
+export const addToFavorites = async (recipeId, groupId = null) => {
+  const response = await fetch(`${API_URL}/favorites`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipeId, groupId }),
+  });
+  if (!response.ok) throw new Error('Failed to add to favorites'); // Re-added error handling
+  return response.json();
+};
+
+export const removeFromFavorites = async (recipeId, groupId = null) => {
+  let url = `${API_URL}/favorites/${recipeId}`;
+  if (groupId) {
+    url += `?groupId=${groupId}`;
+  }
+  const response = await fetch(url, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to remove from favorites'); // Re-added error handling
   return response.json();
 };
 

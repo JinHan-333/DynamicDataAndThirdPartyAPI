@@ -24,11 +24,15 @@ const recipesRouter = require('./routes/recipes');
 const favoritesRouter = require('./routes/favorites');
 const metadataRouter = require('./routes/metadata');
 const ingredientsRouter = require('./routes/ingredients');
+const cocktailDbRouter = require('./routes/cocktaildb');
+const deeplRouter = require('./routes/deepl');
 
 app.use('/api/recipes', recipesRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/metadata', metadataRouter);
 app.use('/api/ingredients', ingredientsRouter);
+app.use('/api/cocktaildb', cocktailDbRouter);
+app.use('/api/deepl', deeplRouter);
 app.use('/api/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/', (req, res) => {

@@ -8,6 +8,7 @@ import CocktailHero from '../components/CocktailHero'
 import Ingredients from '../components/Ingredients'
 import Instructions from '../components/Instructions'
 import Header from '../components/Header'
+import AddToGroupModal from '../components/AddToGroupModal'
 
 function RecipePage() {
   const { id } = useParams()
@@ -18,32 +19,56 @@ function RecipePage() {
   const [translatedData, setTranslatedData] = useState(null)
   const [isTranslating, setIsTranslating] = useState(false)
   const [relatedDrinks, setRelatedDrinks] = useState([])
+  
+  // Favorites State
   const [isFavorite, setIsFavorite] = useState(false)
+  const [allGroups, setAllGroups] = useState([])
+  const [containingGroupIds, setContainingGroupIds] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Fetch favorites and groups
+  const refreshFavorites = async () => {
+    try {
+      const groups = await getFavorites()
+      setAllGroups(groups)
+      
+      // Find which groups contain this recipe
+      const containing = groups.filter(g => g.recipes.includes(id)).map(g => g._id)
+      setContainingGroupIds(containing)
+
+      // Update "Heart" status (true if in ANY group, or specifically "My Favorites"?)
+      // Let's say true if in "My Favorites" to keep the quick indicator consistent, 
+      // OR true if in ANY group. 
+      // Given the new UI, "Favorited" usually means "Saved somewhere".
+      setIsFavorite(containing.length > 0)
+    } catch (err) {
+      console.error('Failed to check favorite status:', err)
+    }
+  }
 
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      try {
-        const favData = await getFavorites()
-        const recipeIds = favData.recipes || []
-        setIsFavorite(recipeIds.includes(id))
-      } catch (err) {
-        console.error('Failed to check favorite status:', err)
-      }
-    }
-    if (id) checkFavoriteStatus()
+    if (id) refreshFavorites()
   }, [id])
 
-  const toggleFavorite = async () => {
+  const handleSaveGroups = async (newSelectedIds) => {
     try {
-      if (isFavorite) {
-        await removeFromFavorites(id)
-        setIsFavorite(false)
-      } else {
-        await addToFavorites(id)
-        setIsFavorite(true)
-      }
+      const oldSet = new Set(containingGroupIds)
+      const newSet = new Set(newSelectedIds)
+
+      // Groups to add
+      const toAdd = newSelectedIds.filter(gid => !oldSet.has(gid))
+      // Groups to remove
+      const toRemove = containingGroupIds.filter(gid => !newSet.has(gid))
+
+      await Promise.all([
+        ...toAdd.map(gid => addToFavorites(id, gid)),
+        ...toRemove.map(gid => removeFromFavorites(id, gid))
+      ])
+
+      await refreshFavorites()
+      setIsModalOpen(false)
     } catch (err) {
-      console.error('Failed to toggle favorite:', err)
+      console.error('Failed to save groups:', err)
       alert('Failed to update favorites')
     }
   }
@@ -221,7 +246,7 @@ function RecipePage() {
       
       <div className="max-w-7xl mx-auto px-8 py-6 flex justify-end">
         <button
-          onClick={toggleFavorite}
+          onClick={() => setIsModalOpen(true)}
           className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition transform hover:scale-105 ${
             isFavorite 
               ? 'bg-red-600 text-white hover:bg-red-700' 
@@ -229,7 +254,7 @@ function RecipePage() {
           }`}
         >
           <span className="text-2xl">{isFavorite ? '♥' : '♡'}</span>
-          {isFavorite ? 'Favorited' : 'Add to Favorites'}
+          {isFavorite ? 'Saved' : 'Add to Favorites'}
         </button>
       </div>
 
@@ -282,6 +307,15 @@ function RecipePage() {
           ← Back to Home
         </button>
       </div>
+
+      {/* Add to Group Modal */}
+      <AddToGroupModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveGroups}
+        groups={allGroups}
+        initialSelectedIds={containingGroupIds}
+      />
     </div>
   )
 }
