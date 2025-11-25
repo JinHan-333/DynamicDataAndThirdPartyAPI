@@ -4,6 +4,7 @@
 
 // Use environment variable for production backend URL, or relative path for development
 const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || '';
+import { normalizeImageUrl } from '../utils/cocktailParser';
 
 /**
  * Search cocktails by name
@@ -21,7 +22,7 @@ export const searchCocktailByName = async (name) => {
         strInstructions: recipe.instructions,
         strGlass: recipe.glass,
         strCategory: recipe.category,
-        strDrinkThumb: recipe.image,
+        strDrinkThumb: normalizeImageUrl(recipe.image),
         strAlcoholic: 'Alcoholic',
         isCustom: true,
         // Map ingredients
@@ -63,7 +64,7 @@ export const getCocktailById = async (id) => {
           strInstructions: customRecipe.instructions,
           strGlass: customRecipe.glass,
           strCategory: customRecipe.category,
-          strDrinkThumb: customRecipe.image,
+          strDrinkThumb: normalizeImageUrl(customRecipe.image),
           strAlcoholic: 'Alcoholic', // Default for now
           isCustom: true,
           // Map ingredients

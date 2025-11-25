@@ -45,3 +45,25 @@ export const getIngredientImageUrl = (ingredientName) => {
   const encoded = encodeURIComponent(ingredientName.trim());
   return `https://www.thecocktaildb.com/images/ingredients/${encoded}-Small.png`;
 };
+
+/**
+ * Normalize image URL - prepend backend URL if image path starts with /api/
+ * This ensures custom recipe images work in production when frontend and backend are on different domains
+ */
+export const normalizeImageUrl = (imageUrl) => {
+  if (!imageUrl) return imageUrl;
+  
+  // If it's already a full URL (http/https), return as is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // If it's a custom recipe image path starting with /api/, prepend backend URL
+  if (imageUrl.startsWith('/api/')) {
+    const backendBase = import.meta.env.VITE_BACKEND_URL || '';
+    return `${backendBase}${imageUrl}`;
+  }
+  
+  // Otherwise return as is (relative paths like /images/...)
+  return imageUrl;
+};

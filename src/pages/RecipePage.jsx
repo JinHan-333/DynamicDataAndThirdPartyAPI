@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getCocktailById, getRandomCocktail } from '../services/cocktaildb'
-import { parseIngredients, parseInstructions } from '../utils/cocktailParser'
+import { parseIngredients, parseInstructions, normalizeImageUrl } from '../utils/cocktailParser'
 import { translateText } from '../services/deepl'
 import { getFavorites, addToFavorites, removeFromFavorites } from '../services/api'
 import CocktailHero from '../components/CocktailHero'
@@ -273,7 +273,7 @@ function RecipePage() {
                 className="bg-black/60 backdrop-blur-sm rounded-lg overflow-hidden cursor-pointer transition transform hover:scale-105 hover:bg-black/80 border-2 border-transparent hover:border-white"
               >
                 <img
-                  src={drink.strDrinkThumb}
+                  src={normalizeImageUrl(drink.strDrinkThumb)}
                   alt={drink.strDrink}
                   className="w-full h-48 object-cover"
                 />

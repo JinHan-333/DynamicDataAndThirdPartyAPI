@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { normalizeImageUrl } from '../utils/cocktailParser'
 
 const SUPPORTED_LANGUAGES = [
   { code: 'ES', name: 'Spanish' },
@@ -45,7 +46,7 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, is
               </div>
             ) : (
               <img
-                src={cocktail.strDrinkThumb}
+                src={normalizeImageUrl(cocktail.strDrinkThumb)}
                 alt={cocktail.strDrink}
                 className="w-full max-w-md rounded-lg shadow-2xl"
               />

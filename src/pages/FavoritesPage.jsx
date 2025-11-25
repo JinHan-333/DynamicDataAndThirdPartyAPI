@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getFavorites, createFavoriteGroup, deleteFavoriteGroup, removeFromFavorites } from '../services/api';
 import { getCocktailById } from '../services/cocktaildb';
+import { normalizeImageUrl } from '../utils/cocktailParser';
 import Header from '../components/Header';
 
 function FavoritesPage() {
@@ -197,7 +198,7 @@ function FavoritesPage() {
                       </div>
                    ) : (
                       <img
-                        src={drink.strDrinkThumb || '/images/placeholder.png'}
+                        src={normalizeImageUrl(drink.strDrinkThumb) || '/images/placeholder.png'}
                         alt={drink.strDrink}
                         className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
