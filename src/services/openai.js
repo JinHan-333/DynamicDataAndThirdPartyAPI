@@ -2,6 +2,9 @@
 // Calls serverless function at /api/openai
 // API key is protected on server-side
 
+// Use environment variable for production backend URL, or relative path for development
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || '';
+
 /**
  * Send a chat message to OpenAI
  * @param {Array} messages - Array of message objects [{role: 'user'|'assistant'|'system', content: string}]
@@ -9,7 +12,7 @@
  * @returns {Promise<Object>} Chat completion response
  */
 export const sendChatMessage = async (messages, model = 'gpt-3.5-turbo') => {
-  const response = await fetch('/api/openai', {
+  const response = await fetch(`${BACKEND_BASE}/api/openai`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +41,7 @@ export const sendChatMessage = async (messages, model = 'gpt-3.5-turbo') => {
  * @returns {Promise<void>}
  */
 export const streamChatMessage = async (messages, onChunk, model = 'gpt-3.5-turbo') => {
-  const response = await fetch('/api/openai', {
+  const response = await fetch(`${BACKEND_BASE}/api/openai`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

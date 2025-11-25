@@ -2,6 +2,9 @@
 // Calls serverless function at /api/deepl
 // API key is protected on server-side
 
+// Use environment variable for production backend URL, or relative path for development
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || '';
+
 /**
  * Translate text using DeepL API
  * @param {string} text - Text to translate
@@ -23,7 +26,7 @@ export const translateText = async (text, targetLang, sourceLang = null) => {
     body.source_lang = sourceLang.toUpperCase();
   }
 
-  const response = await fetch('/api/deepl?endpoint=translate', {
+  const response = await fetch(`${BACKEND_BASE}/api/deepl?endpoint=translate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -48,7 +51,7 @@ export const translateText = async (text, targetLang, sourceLang = null) => {
  * @returns {Promise<Array>} Array of supported languages
  */
 export const getSupportedLanguages = async () => {
-  const response = await fetch('/api/deepl?endpoint=languages&type=target');
+  const response = await fetch(`${BACKEND_BASE}/api/deepl?endpoint=languages&type=target`);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

@@ -1,7 +1,9 @@
-const API_URL = '/api';
-const BASE_URL = '/api/recipes';
-const FAVORITES_URL = '/api/favorites';
-const METADATA_URL = '/api/metadata';
+// Use environment variable for production backend URL, or relative path for development
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || '';
+const API_URL = `${BACKEND_BASE}/api`;
+const BASE_URL = `${BACKEND_BASE}/api/recipes`;
+const FAVORITES_URL = `${BACKEND_BASE}/api/favorites`;
+const METADATA_URL = `${BACKEND_BASE}/api/metadata`;
 
 export const getCustomRecipes = async (name = '') => {
   const url = name ? `${BASE_URL}?name=${encodeURIComponent(name)}` : BASE_URL;

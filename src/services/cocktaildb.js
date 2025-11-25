@@ -2,6 +2,9 @@
 // Calls serverless functions at /api/cocktaildb/*
 // API proxied for consistency and potential rate limiting
 
+// Use environment variable for production backend URL, or relative path for development
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || '';
+
 /**
  * Search cocktails by name
  * @param {string} name - Cocktail name to search
@@ -35,7 +38,7 @@ export const searchCocktailByName = async (name) => {
   }
 
   // 2. Fallback to external API
-  const response = await fetch(`/api/cocktaildb/search?s=${encodeURIComponent(name)}`);
+  const response = await fetch(`${BACKEND_BASE}/api/cocktaildb/search?s=${encodeURIComponent(name)}`);
   const data = await response.json();
   return data.drinks || [];
 };
@@ -77,7 +80,7 @@ export const getCocktailById = async (id) => {
     }
   }
 
-  const response = await fetch(`/api/cocktaildb/lookup?i=${id}`);
+  const response = await fetch(`${BACKEND_BASE}/api/cocktaildb/lookup?i=${id}`);
   const data = await response.json();
   return data.drinks ? data.drinks[0] : null;
 };
@@ -87,7 +90,7 @@ export const getCocktailById = async (id) => {
  * @returns {Promise<Object|null>} Random cocktail
  */
 export const getRandomCocktail = async () => {
-  const response = await fetch('/api/cocktaildb/random');
+  const response = await fetch(`${BACKEND_BASE}/api/cocktaildb/random`);
   const data = await response.json();
   return data.drinks ? data.drinks[0] : null;
 };
@@ -98,7 +101,7 @@ export const getRandomCocktail = async () => {
  * @returns {Promise<Array>} Array of cocktails
  */
 export const searchCocktailByLetter = async (letter) => {
-  const response = await fetch(`/api/cocktaildb/search?f=${letter}`);
+  const response = await fetch(`${BACKEND_BASE}/api/cocktaildb/search?f=${letter}`);
   const data = await response.json();
   return data.drinks || [];
 };
