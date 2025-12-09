@@ -87,6 +87,16 @@ export const createRecipe = async (recipeData) => {
   return response.json();
 };
 
+export const updateRecipe = async (id, recipeData) => {
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(recipeData),
+  });
+  if (!response.ok) throw new Error('Failed to update recipe');
+  return response.json();
+};
+
 export const deleteRecipe = async (id) => {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: 'DELETE',

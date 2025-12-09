@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getCocktailById, getRandomCocktail } from '../services/cocktaildb'
 import { parseIngredients, parseInstructions, normalizeImageUrl } from '../utils/cocktailParser'
 import { translateText } from '../services/deepl'
-import { getFavorites, addToFavorites, removeFromFavorites } from '../services/api'
+import { getFavorites, addToFavorites, removeFromFavorites, updateRecipe } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import CocktailHero from '../components/CocktailHero'
 import Ingredients from '../components/Ingredients'
 import Instructions from '../components/Instructions'
@@ -114,7 +115,41 @@ function RecipePage() {
     }
 
     fetchRelatedDrinks()
+    fetchRelatedDrinks()
   }, [id])
+
+  const { user } = useAuth();
+  
+  // Debug toggle issue
+  useEffect(() => {
+    if (cocktail && user) {
+        console.log('RecipePage Debug:', { 
+            cocktailOwner: cocktail.owner, 
+            userId: user.id, 
+            userUnderscoreId: user._id, 
+            match: cocktail.owner === user.id
+        });
+    }
+  }, [cocktail, user]);
+
+  const isOwner = user && cocktail && (
+      (user.id && cocktail.owner === user.id) || 
+      (user._id && cocktail.owner === user._id) ||
+      (user.id && cocktail.owner && cocktail.owner.toString() === user.id.toString())
+  );
+
+  const handleTogglePublic = async () => {
+      try {
+          const newStatus = !cocktail.isPublic;
+          // Use _id (now available from cocktaildb.js)
+          await updateRecipe(cocktail._id || cocktail.idDrink, { isPublic: newStatus });
+          // Optimistically update state to avoid re-fetch or shape mismatch
+          setCocktail(prev => ({ ...prev, isPublic: newStatus }));
+      } catch (err) {
+          console.error("Failed to update visibility:", err);
+          alert("Failed to update visibility");
+      }
+  }
 
   const handleTranslate = async (targetLang) => {
     if (!cocktail) return;
@@ -237,6 +272,7 @@ function RecipePage() {
       }}
     >
       <Header />
+      
       <CocktailHero 
         cocktail={cocktail} 
         translatedData={translatedData}
@@ -244,6 +280,8 @@ function RecipePage() {
         isTranslating={isTranslating}
         isFavorite={isFavorite}
         onToggleFavorite={() => setIsModalOpen(true)}
+        isOwner={isOwner}
+        onTogglePublic={handleTogglePublic}
       />
       
 

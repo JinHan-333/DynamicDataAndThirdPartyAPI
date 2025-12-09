@@ -24,7 +24,10 @@ export const searchCocktailByName = async (name) => {
         strCategory: recipe.category,
         strDrinkThumb: normalizeImageUrl(recipe.image),
         strAlcoholic: 'Alcoholic',
+        strAlcoholic: 'Alcoholic',
         isCustom: true,
+        owner: recipe.owner,
+        isPublic: recipe.isPublic,
         // Map ingredients
         ...recipe.ingredients.reduce((acc, ing, i) => {
           acc[`strIngredient${i + 1}`] = ing.name;
@@ -67,6 +70,8 @@ export const getCocktailById = async (id) => {
           strDrinkThumb: normalizeImageUrl(customRecipe.image),
           strAlcoholic: 'Alcoholic', // Default for now
           isCustom: true,
+          owner: customRecipe.owner,
+          isPublic: customRecipe.isPublic,
           // Map ingredients
           ...customRecipe.ingredients.reduce((acc, ing, i) => {
             acc[`strIngredient${i + 1}`] = ing.name;

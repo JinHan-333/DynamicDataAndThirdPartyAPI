@@ -13,7 +13,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'RU', name: 'Russian' },
 ];
 
-function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, isFavorite, onToggleFavorite, onContentClick }) {
+function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, isFavorite, onToggleFavorite, onContentClick, isOwner, onTogglePublic }) {
   const [selectedLang, setSelectedLang] = useState('ES');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
@@ -89,6 +89,27 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, is
                 </p>
               )}
             </div>
+
+            {/* Owner Controls */}
+            {(isOwner) && (
+             <div className="mb-6 bg-white/10 p-4 rounded-lg border border-white/20 inline-block">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm uppercase tracking-widest text-gray-300">Visibility:</span>
+                  <button 
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        onTogglePublic && onTogglePublic();
+                     }}
+                     className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${cocktail.isPublic ? 'bg-green-500 text-black' : 'bg-red-500 text-white'}`}
+                  >
+                     {cocktail.isPublic ? 'Public' : 'Private'}
+                  </button>
+                  <span className="text-xs text-gray-500 italic">
+                      {cocktail.isPublic ? '(Visible to everyone)' : '(Only visible to you)'}
+                  </span>
+                </div>
+             </div>
+            )}
           </div>
         </div>
       </div>
@@ -104,6 +125,8 @@ CocktailHero.propTypes = {
   isFavorite: PropTypes.bool,
   onToggleFavorite: PropTypes.func,
   onContentClick: PropTypes.func,
+  isOwner: PropTypes.bool,
+  onTogglePublic: PropTypes.func,
 };
 
 export default CocktailHero;

@@ -118,10 +118,17 @@ router.post('/', optionalAuth, async (req, res) => {
 });
 
 // PUT update recipe
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
+
+    // Check ownership
+    // Note: recipe.owner is an ObjectId, req.user._id is usually a string (from JWT payload), but check types.
+    // recipe.owner might be null for older public recipes? Assume standard checks.
+    if (!recipe.owner || recipe.owner.toString() !== req.user._id) {
+        return res.status(403).json({ message: 'You are not authorized to edit this recipe' });
+    }
 
     if (req.body.name != null) recipe.name = req.body.name;
     if (req.body.ingredients != null) recipe.ingredients = req.body.ingredients;
@@ -129,6 +136,7 @@ router.put('/:id', async (req, res) => {
     if (req.body.glass != null) recipe.glass = req.body.glass;
     if (req.body.category != null) recipe.category = req.body.category;
     if (req.body.image != null) recipe.image = req.body.image;
+    if (req.body.isPublic != null) recipe.isPublic = req.body.isPublic;
 
     const updatedRecipe = await recipe.save();
     res.json(updatedRecipe);
