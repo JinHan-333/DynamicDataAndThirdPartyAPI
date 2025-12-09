@@ -33,6 +33,8 @@ app.use('/api/metadata', metadataRouter);
 app.use('/api/ingredients', ingredientsRouter);
 app.use('/api/cocktaildb', cocktailDbRouter);
 app.use('/api/deepl', deeplRouter);
+const authRouter = require('./routes/auth');
+app.use('/api/auth', authRouter);
 app.use('/api/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/', (req, res) => {

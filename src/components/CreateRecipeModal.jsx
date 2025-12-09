@@ -118,7 +118,8 @@ function CreateRecipeModal({ isOpen, onClose }) {
         glass: metadata.glass[0] || 'Highball glass',
         instructions: '',
         category: metadata.category[0] || 'Cocktail',
-        image: ''
+        image: '',
+        isPublic: true 
       });
       setIngredients([{ name: '', measure: '' }]);
     } catch (error) {
@@ -258,6 +259,18 @@ function CreateRecipeModal({ isOpen, onClose }) {
                   + Add Another Ingredient
                 </button>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPublic"
+                name="isPublic"
+                checked={formData.isPublic !== false}
+                onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
+                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600 focus:ring-2"
+              />
+              <label htmlFor="isPublic" className="text-white text-sm">Make Public</label>
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
