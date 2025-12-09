@@ -13,7 +13,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'RU', name: 'Russian' },
 ];
 
-function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, isFavorite, onToggleFavorite }) {
+function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, isFavorite, onToggleFavorite, onContentClick }) {
   const [selectedLang, setSelectedLang] = useState('ES');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
@@ -31,7 +31,10 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, is
   const displayGlass = translatedData?.glass || cocktail.strGlass;
 
   return (
-    <div className="relative bg-black/60 backdrop-blur-sm text-white">
+    <div 
+      className={`relative bg-black/60 backdrop-blur-sm text-white ${onContentClick ? 'cursor-pointer hover:bg-black/70 transition' : ''}`}
+      onClick={onContentClick}
+    >
       <div className="max-w-7xl mx-auto px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Left: Image or Custom Label */}
@@ -58,7 +61,10 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, is
             <div className="flex items-center gap-4 mb-6">
               <h1 className="text-5xl font-bold uppercase tracking-wide">{displayName}</h1>
               <button
-                onClick={onToggleFavorite}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite && onToggleFavorite();
+                }}
                 className="bg-white text-black w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-200 transition flex-shrink-0"
                 title={isFavorite ? "Remove from favorites" : "Add to favorites"}
               >
@@ -83,56 +89,6 @@ function CocktailHero({ cocktail, translatedData, onTranslate, isTranslating, is
                 </p>
               )}
             </div>
-
-            {/* Translation Controls */}
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                  className="px-8 py-3 border-2 border-white text-white uppercase tracking-wider hover:bg-white hover:text-black transition"
-                >
-                  {showLanguageSelector ? 'Hide Languages' : 'Translate'}
-                </button>
-{/* 
-                {translatedData && (
-                  <span className="text-sm text-green-400">
-                    Translated to {SUPPORTED_LANGUAGES.find(l => l.code === translatedData.targetLang)?.name}
-                  </span>
-                )} */}
-              </div>
-
-              {showLanguageSelector && (
-                <div className="bg-black/50 p-6 rounded-lg border border-white/20">
-                  <label className="block text-sm font-medium mb-3">Select Language:</label>
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {SUPPORTED_LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => setSelectedLang(lang.code)}
-                        className={`px-4 py-2 border rounded transition ${
-                          selectedLang === lang.code
-                            ? 'bg-white text-black border-white'
-                            : 'bg-transparent text-white border-white/40 hover:border-white'
-                        }`}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={handleTranslate}
-                    disabled={isTranslating}
-                    className={`w-full px-6 py-3 border-2 border-white text-white uppercase tracking-wider transition ${
-                      isTranslating
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:bg-white hover:text-black'
-                    }`}
-                  >
-                    {isTranslating ? 'Translating...' : `Translate to ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLang)?.name}`}
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -147,6 +103,7 @@ CocktailHero.propTypes = {
   isTranslating: PropTypes.bool,
   isFavorite: PropTypes.bool,
   onToggleFavorite: PropTypes.func,
+  onContentClick: PropTypes.func,
 };
 
 export default CocktailHero;

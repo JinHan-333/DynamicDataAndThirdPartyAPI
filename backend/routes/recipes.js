@@ -2,25 +2,55 @@ const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/Recipe');
 
+const { requireAuth, optionalAuth } = require('../middleware/auth');
+
 // GET all custom recipes or search by name
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     let query = {};
     if (req.query.name) {
       query.name = { $regex: req.query.name, $options: 'i' };
     }
-    const recipes = await Recipe.find(query).sort({ createdAt: -1 });
+
+    const visibilityQuery = req.user 
+      ? { $or: [{ isPublic: true }, { owner: req.user._id }] }
+      : { isPublic: true };
+
+    const finalQuery = { ...query, ...visibilityQuery };
+    
+    // Wait, `query` has `name`. `visibilityQuery` has `isPublic` or `$or`.
+    // If `visibilityQuery` has `$or`, and `query` has `name`, merging works (MongoDB combines top-level).
+    
+    const recipes = await Recipe.find(finalQuery).sort({ createdAt: -1 });
     res.json(recipes);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+// GET my recipes
+router.get('/my-recipes', requireAuth, async (req, res) => {
+    try {
+        const recipes = await Recipe.find({ owner: req.user._id }).sort({ createdAt: -1 });
+        res.json(recipes);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // GET one recipe
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
+    
+    // Check visibility
+    if (!recipe.isPublic) {
+        if (!req.user || req.user._id !== recipe.owner?.toString()) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+    }
+    
     res.json(recipe);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -32,14 +62,21 @@ const fs = require('fs');
 const path = require('path');
 
 // POST create recipe
-router.post('/', async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
+  // If private, require user
+  if (req.body.isPublic === false && !req.user) {
+      return res.status(401).json({ message: 'You must be logged in to create private recipes.' });
+  }
+
   const recipe = new Recipe({
     name: req.body.name,
     ingredients: req.body.ingredients,
     instructions: req.body.instructions,
     glass: req.body.glass,
     category: req.body.category,
-    image: req.body.image
+    image: req.body.image,
+    owner: req.user ? req.user._id : null,
+    isPublic: req.body.isPublic !== undefined ? req.body.isPublic : true
   });
 
   try {

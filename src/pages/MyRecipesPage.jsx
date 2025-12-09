@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CocktailHero from '../components/CocktailHero';
 import { getMyRecipes } from '../services/api';
@@ -8,6 +9,7 @@ export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Refresh recipes when modal closes (in case new recipe added)
   // Actually, CreateRecipeModal doesn't trigger refresh directly, maybe we pass a callback?
@@ -63,15 +65,11 @@ export default function MyRecipesPage() {
                 cocktail={{
                   idDrink: recipe._id,
                   strDrink: recipe.name,
-                  strDrinkThumb: recipe.image || '', // Ensure valid URL or placeholder logic in Hero
+                  strDrinkThumb: recipe.image || '', 
                   strCategory: recipe.category,
                   strInstructions: recipe.instructions,
-                  // Map ingredients for Hero if needed, or Hero fetches details?
-                  // CocktailHero usually takes just minimal data or assumes full data?
-                  // Looking at CocktailHero usage, it likely expects specific props.
-                  // Let's assume it works with this object or adjust if needed.
-                  // Existing landing page passes full cocktail object.
                 }} 
+                onContentClick={() => navigate(`/recipe/${recipe._id}`)}
               />
             ))}
           </div>
