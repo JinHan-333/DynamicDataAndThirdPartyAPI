@@ -294,6 +294,9 @@ function CreateRecipeModal({ isOpen, onClose }) {
                                     Upload your image
                                 </button>
                                 <p className="text-gray-500 text-xs mt-3 uppercase tracking-wider">or drop it here</p>
+                                <p className="text-gray-500 text-xs mt-4 italic opacity-70">
+                                    (If no image is uploaded, an auto-generated drink image will be used)
+                                </p>
                             </div>
                         </div>
                     )}
