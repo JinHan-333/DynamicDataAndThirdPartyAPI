@@ -20,6 +20,52 @@ function CreateRecipeModal({ isOpen, onClose }) {
     alcoholic: []
   });
 
+  // Image Preview and File State
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFile = (file) => {
+    if (file && file.type.startsWith('image/')) {
+        setSelectedFile(file);
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+    }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const onButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const removeImage = (e) => {
+      e.stopPropagation();
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+
+
   // Autocomplete state
   const [activeIngredientIndex, setActiveIngredientIndex] = useState(null);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -99,6 +145,8 @@ function CreateRecipeModal({ isOpen, onClose }) {
     setIngredients(newIngredients);
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -106,10 +154,22 @@ function CreateRecipeModal({ isOpen, onClose }) {
     const validIngredients = ingredients.filter((ing) => ing.name.trim() !== '');
 
     try {
-      await createRecipe({
-        ...formData,
-        ingredients: validIngredients,
-      });
+      // Use FormData to allow file upload
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('glass', formData.glass);
+      data.append('instructions', formData.instructions);
+      data.append('category', formData.category);
+      data.append('isPublic', formData.isPublic !== false); // ensure boolean sent as string/boolean
+      
+      // Stringify complex objects for backend to parse
+      data.append('ingredients', JSON.stringify(validIngredients));
+
+      if (selectedFile) {
+          data.append('image', selectedFile);
+      }
+
+      await createRecipe(data);
       alert('Recipe created successfully!');
       onClose();
       // Reset form
@@ -122,6 +182,7 @@ function CreateRecipeModal({ isOpen, onClose }) {
         isPublic: true 
       });
       setIngredients([{ name: '', measure: '' }]);
+      setSelectedFile(null);
     } catch (error) {
       console.error('Failed to create recipe:', error);
       alert('Failed to create recipe. Please try again.');
@@ -169,6 +230,74 @@ function CreateRecipeModal({ isOpen, onClose }) {
                   options={metadata.glass.length > 0 ? metadata.glass : ['Highball glass']}
                 />
               </div>
+            </div>
+
+
+
+
+
+            <div className="md:col-span-2">
+                 <label className="block text-xs font-bold text-white uppercase mb-4">Upload Image (Optional)</label>
+                 
+                 <div 
+                    className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-600 hover:border-gray-400 bg-black/50'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                 >
+                    <input 
+                        ref={fileInputRef}
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => handleFile(e.target.files[0])}
+                        className="hidden"
+                    />
+
+                    {previewUrl ? (
+                        <div className="relative group mx-auto w-full max-w-sm">
+                            <img 
+                                src={previewUrl} 
+                                alt="Preview" 
+                                className="w-full h-64 object-cover rounded-lg shadow-lg"
+                            />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                                <button
+                                    type="button"
+                                    onClick={removeImage}
+                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition font-bold uppercase text-sm"
+                                >
+                                    Remove Image
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4 py-4">
+                            <h3 className="text-xl font-bold text-white uppercase tracking-wider">
+                                Add an Image to Your Custom Drink
+                            </h3>
+                            <p className="text-gray-400 text-sm max-w-md mx-auto">
+                                Upload a photo of the cocktail you made, or choose a picture you want to display for your custom drink.
+                            </p>
+                            
+                            <div className="pt-4">
+                                <button
+                                    type="button"
+                                    onClick={onButtonClick}
+                                    className="px-6 py-3 bg-white text-black font-bold uppercase text-sm rounded hover:bg-gray-200 transition flex items-center gap-2 mx-auto"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    Upload your image
+                                </button>
+                                <p className="text-gray-500 text-xs mt-3 uppercase tracking-wider">or drop it here</p>
+                            </div>
+                        </div>
+                    )}
+                 </div>
             </div>
 
             <div>

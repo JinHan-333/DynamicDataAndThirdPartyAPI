@@ -60,59 +60,96 @@ router.get('/:id', optionalAuth, async (req, res) => {
 const { generateCocktailImage } = require('../services/imageGenerator');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+
+// Configure Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const publicDir = path.join(__dirname, '../../public/images/custom');
+    if (!fs.existsSync(publicDir)){
+        fs.mkdirSync(publicDir, { recursive: true });
+    }
+    cb(null, publicDir)
+  },
+  filename: function (req, file, cb) {
+    // secure filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // POST create recipe
-router.post('/', optionalAuth, async (req, res) => {
+router.post('/', optionalAuth, upload.single('image'), async (req, res) => {
+  // Parse body (multer handles multipart, but if JSON was sent, existing body parser handles it. 
+  // However, mixing is tricky. Frontend will switch to FormData for this request).
+  
+  // Convert "null" strings to actual null or booleans if coming from FormData
+  const parseBool = (val) => val === 'true' || val === true;
+  const parseJson = (val) => {
+      try { return typeof val === 'string' ? JSON.parse(val) : val; } catch(e) { return val; }
+  };
+
+  const isPublic = req.body.isPublic !== undefined ? parseBool(req.body.isPublic) : true;
+
   // If private, require user
-  if (req.body.isPublic === false && !req.user) {
+  if (isPublic === false && !req.user) {
+      // Clean up uploaded file if auth fails
+      if (req.file) fs.unlinkSync(req.file.path);
       return res.status(401).json({ message: 'You must be logged in to create private recipes.' });
   }
 
   const recipe = new Recipe({
     name: req.body.name,
-    ingredients: req.body.ingredients,
+    ingredients: parseJson(req.body.ingredients),
     instructions: req.body.instructions,
     glass: req.body.glass,
     category: req.body.category,
-    image: req.body.image,
+    // If file uploaded, use it. Else use body.image (if any URL provided) or null
+    image: req.file ? `/api/images/custom/${req.file.filename}` : (req.body.image || ''),
     owner: req.user ? req.user._id : null,
-    isPublic: req.body.isPublic !== undefined ? req.body.isPublic : true
+    isPublic: isPublic
   });
 
   try {
     const newRecipe = await recipe.save();
 
-    // Generate Image
-    try {
-      const imageBuffer = await generateCocktailImage(newRecipe);
-      if (imageBuffer) {
-        const imageName = `${newRecipe._id}.png`;
-        const publicDir = path.join(__dirname, '../../public/images/custom');
-        
-        // Ensure directory exists
-        if (!fs.existsSync(publicDir)){
-            fs.mkdirSync(publicDir, { recursive: true });
+    // If NO file uploaded and NO image URL provided, Generate Image
+    if (!req.file && !req.body.image) {
+        try {
+        const imageBuffer = await generateCocktailImage(newRecipe);
+        if (imageBuffer) {
+            const imageName = `${newRecipe._id}.png`;
+            const publicDir = path.join(__dirname, '../../public/images/custom');
+            
+            // Ensure directory exists
+            if (!fs.existsSync(publicDir)){
+                fs.mkdirSync(publicDir, { recursive: true });
+            }
+
+            const imagePath = path.join(publicDir, imageName);
+            fs.writeFileSync(imagePath, imageBuffer);
+            
+            console.log('--------------------------------------------------');
+            console.log('Generated Image Saved To:', imagePath);
+            console.log('Public URL:', `/api/images/custom/${imageName}`);
+            console.log('--------------------------------------------------');
+
+            // Update recipe with image URL
+            newRecipe.image = `/api/images/custom/${imageName}`;
+            await newRecipe.save();
         }
-
-        const imagePath = path.join(publicDir, imageName);
-        fs.writeFileSync(imagePath, imageBuffer);
-        
-        console.log('--------------------------------------------------');
-        console.log('Generated Image Saved To:', imagePath);
-        console.log('Public URL:', `/api/images/custom/${imageName}`);
-        console.log('--------------------------------------------------');
-
-        // Update recipe with image URL
-        newRecipe.image = `/api/images/custom/${imageName}`;
-        await newRecipe.save();
-      }
-    } catch (imgErr) {
-      console.error('Image generation/saving failed:', imgErr);
-      // Continue without image
+        } catch (imgErr) {
+        console.error('Image generation/saving failed:', imgErr);
+        // Continue without image
+        }
     }
 
     res.status(201).json(newRecipe);
   } catch (err) {
+    if (req.file) fs.unlinkSync(req.file.path); // Clean up on error
     res.status(400).json({ message: err.message });
   }
 });

@@ -78,10 +78,21 @@ export const getMyRecipes = async () => {
 };
 
 export const createRecipe = async (recipeData) => {
+  const headers = getHeaders();
+  
+  let body;
+  if (recipeData instanceof FormData) {
+      // Let browser set Content-Type for FormData
+      delete headers['Content-Type'];
+      body = recipeData;
+  } else {
+      body = JSON.stringify(recipeData);
+  }
+
   const response = await fetch(BASE_URL, {
     method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(recipeData),
+    headers: headers,
+    body: body,
   });
   if (!response.ok) throw new Error('Failed to create recipe');
   return response.json();
