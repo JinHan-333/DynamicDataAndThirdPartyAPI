@@ -115,7 +115,7 @@ function FavoritesPage() {
       <Header />
       
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-white uppercase tracking-wider">My Recipes</h1>
+        <h1 className="text-4xl font-bold mb-8 text-white uppercase tracking-wider">My Favorites</h1>
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
