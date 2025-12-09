@@ -115,7 +115,11 @@ function FavoritesPage() {
       <Header />
       
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-white uppercase tracking-wider">My Favorites</h1>
+        <h1 className="text-4xl font-bold mb-2 text-white uppercase tracking-wider">Public Favorite Lists</h1>
+        <p className="text-gray-400 text-sm uppercase tracking-widest mb-8 flex items-center gap-2">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+          Visible to the community
+        </p>
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
